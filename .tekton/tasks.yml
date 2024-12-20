@@ -1,0 +1,20 @@
+apiVersion: tekton.dev/v1beta1
+kind: Task
+metadata:
+  name: ci-cd-tasks
+spec:
+  steps:
+    - name: cleanup
+      image: alpine
+      script: |
+        #!/bin/sh
+        echo "Cleaning up temporary files..."
+        rm -rf /tmp/*
+
+    - name: run-nose-tests
+      image: python:3.9
+      script: |
+        #!/bin/bash
+        echo "Running nose tests..."
+        pip install nose
+        nosetests tests/
