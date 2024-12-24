@@ -41,4 +41,5 @@ jobs:
           pip install -r requirements.txt
           
       - name: Run tests
-        run: pytest tests/ --cov=src
+        run: |
+          python -m pytest tests/ --cov=src --cov-report=term-missing
