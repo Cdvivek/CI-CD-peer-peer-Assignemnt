@@ -1,0 +1,55 @@
+apiVersion: tekton.dev/v1beta1
+kind: Pipeline
+metadata:
+  name: ci-cd-peer-peer-pipeline
+spec:
+  workspaces:
+    - name: shared-workspace
+  params:
+    - name: git-url
+      type: string
+    - name: git-revision
+      type: string
+      default: main
+  tasks:
+    - name: fetch-repository
+      taskRef:
+        name: git-clone
+      workspaces:
+        - name: output
+          workspace: shared-workspace
+      params:
+        - name: url
+          value: $(params.git-url)
+        - name: revision
+          value: $(params.git-revision)
+
+    - name: run-tests
+      runAfter: ["fetch-repository"]
+      taskRef:
+        name: pytest
+      workspaces:
+        - name: source
+          workspace: shared-workspace
+
+    # OpenShift specific tasks
+    - name: build-image
+      runAfter: ["run-tests"]
+      taskRef:
+        name: buildah
+      params:
+        - name: IMAGE
+          value: "image-registry.openshift-image-registry.svc:5000/$(context.pipelineRun.namespace)/ci-cd-peer-peer:latest"
+      workspaces:
+        - name: source
+          workspace: shared-workspace
+
+    - name: deploy-to-openshift
+      runAfter: ["build-image"]
+      taskRef:
+        name: openshift-client
+      params:
+        - name: SCRIPT
+          value: |
+            oc apply -f k8s/deployment.yaml
+            oc apply -f k8s/service.yaml
