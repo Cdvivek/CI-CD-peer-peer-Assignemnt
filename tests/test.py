@@ -1,4 +1,11 @@
-from main import greet
+from src.main import Calculator
 
-def test_greet():
-    assert greet("Test") == "Hello, Test!"
+
+def test_add():
+    calc = Calculator()
+    assert calc.add(3, 5) == 8
+
+
+def test_add_negative():
+    calc = Calculator()
+    assert calc.add(-1, -1) == -2
