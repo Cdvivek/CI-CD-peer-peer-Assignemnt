@@ -1,28 +1,23 @@
 apiVersion: tekton.dev/v1beta1
 kind: Task
 metadata:
-  name: cleanup-task
+  name: cleanup
 spec:
   steps:
-    - name: cleanup
-      image: ubuntu
-      script: |
-        #!/bin/bash
-        echo "Cleaning up temporary files..."
-        rm -rf /tmp/*
-
+    - name: remove-files
+      image: alpine:3.14
+      command: ["rm"]
+      args: ["-rf", "/workspace/*"]
 ---
 apiVersion: tekton.dev/v1beta1
 kind: Task
 metadata:
-  name: nose-test-task
+  name: nose-tests
 spec:
   steps:
     - name: run-tests
-      image: python:3.10
+      image: python:3.8
       script: |
-        #!/bin/bash
-        echo "Installing dependencies..."
         pip install nose
-        echo "Running tests..."
-        nosetests test.py
+        pip install -r requirements.txt
+        nosetests
